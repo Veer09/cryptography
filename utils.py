@@ -23,4 +23,13 @@ def bytes_to_base64(b: bytes) -> str:
         result += base64_map[c1] + base64_map[c2]
         result += base64_map[c3] if i+1 < len(b) else "="
         result += base64_map[c4] if i+2 < len(b) else "="
-    return result        
+    return result   
+
+def perform_xor(b1: bytes, b2: bytes) -> bytes:
+    if len(b1) != len(b2):
+        raise ValueError("Byte strings must have the same length to perform XOR")
+    
+    result = bytearray()
+    for i in range(len(b1)):
+        result.append(b1[i] ^ b2[i])
+    return bytes(result)     
