@@ -6,6 +6,7 @@ def solve():
     hex_msg = hex_to_bytes(msg)
     best_score = -1
     best_result = b""
+    enc_key = 0
     for i in range(256):
         key = bytes([i] * len(hex_msg))
         result = perform_xor(hex_msg, key)
@@ -13,7 +14,8 @@ def solve():
         if score > best_score:
             best_score = score
             best_result = result
-    print(f"Score: {best_score}, Result: {best_result}")
+            enc_key = i
+    print(f"Score: {best_score}, Result: {best_result}, Key: {enc_key}")
 
 if __name__ == "__main__":
     solve()
