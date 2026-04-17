@@ -33,3 +33,20 @@ def perform_xor(b1: bytes, b2: bytes) -> bytes:
     for i in range(len(b1)):
         result.append(b1[i] ^ b2[i])
     return bytes(result)     
+
+
+def score_text(text: bytes) -> int:
+    score = 0
+    for b in text:
+        char = chr(b).lower()
+        if char in "etaoin":
+            score += 5
+        elif char in "shrdlu":
+            score += 3
+        elif char == " ":
+            score += 10
+        elif 32 <= b <= 126:
+            score += 1
+        else:
+            score -= 20
+    return score
