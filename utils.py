@@ -32,8 +32,11 @@ def perform_xor(b1: bytes, b2: bytes) -> bytes:
     result = bytearray()
     for i in range(len(b1)):
         result.append(b1[i] ^ b2[i])
-    return bytes(result)     
+    return bytes(result) 
 
+def single_byte_xor(b: bytes, key: int) -> bytes:
+    key_bytes = bytes([key] * len(b))  
+    return perform_xor(b, key_bytes)
 
 def score_text(text: bytes) -> int:
     score = 0
