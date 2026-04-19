@@ -9,22 +9,6 @@ def hex_to_bytes(hex: str) -> bytes:
 
     return bytes(result)
 
-def bytes_to_base64(b: bytes) -> str:
-    base64_map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    result = ""
-    for i in range(0, len(b), 3):
-        b1 = b[i]
-        b2 = b[i+1] if i+1 < len(b) else 0
-        b3 = b[i+2] if i+2 < len(b) else 0
-        c1 = b1 >> 2
-        c2 = (b1 & 0x03) << 4 | b2 >> 4
-        c3 = (b2 & 0x0F) << 2 | b3 >> 6
-        c4 = b3 & 0x3F
-        result += base64_map[c1] + base64_map[c2]
-        result += base64_map[c3] if i+1 < len(b) else "="
-        result += base64_map[c4] if i+2 < len(b) else "="
-    return result   
-
 def perform_xor(b1: bytes, b2: bytes) -> bytes:
     if len(b1) != len(b2):
         raise ValueError("Byte strings must have the same length to perform XOR")
@@ -48,12 +32,6 @@ def repeated_key_xor(b: bytes, key: bytes) -> bytes:
         result.append(result_byte)
     return bytes(result)
 
-
-
-
-        
-
-
 def score_text(text: bytes) -> int:
     score = 0
     for b in text:
@@ -69,3 +47,21 @@ def score_text(text: bytes) -> int:
         else:
             score -= 20
     return score
+
+def calculate_hamming_distance(b1: bytes, b2:bytes):
+    if len(b1) != len(b2):
+        raise ValueError("Byte strings must have the same length to calculate Hamming Distance!!")
+    return sum(byte.bit_count() for byte in perform_xor(b1, b2))
+
+def find_key(b: bytes) -> tuple[int, bytes, int]:
+    best_score = float('-inf')
+    best_result = b""
+    enc_key = 0
+    for i in range(256):
+        result = single_byte_xor(b, i)
+        score = score_text(result)
+        if score > best_score:
+            best_score = score
+            best_result = result
+            enc_key = i
+    return best_score, best_result, enc_key

@@ -1,7 +1,7 @@
 from utils import hex_to_bytes, single_byte_xor, score_text
 
 def solve():
-    best_score = -1
+    best_score = float('-inf')
     best_result = b""
     msg_string = ""
     enc_key = 0
