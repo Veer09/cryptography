@@ -26,7 +26,7 @@ Operations are performed using standard integer arithmetic followed by a modulo 
 2. **Multiplication:** $(a \cdot b) \pmod p$
 
 >  Why only Prime numbers?
-> If $q$ were a composite number, the field would encounter the **Zero Divisor Problem**, preventing the existence of multiplicative inverses for all non-zero elements. (See [[algebraic-structure#Difference Between Ring and Field|Zero Divisor Problem]] for details).
+> If $q$ were a composite number, the field would encounter the **Zero Divisor Problem**, preventing the existence of multiplicative inverses for all non-zero elements. (See [Zero Divisor Problem](algebraic-structure.md#difference-between-ring-and-field) for details).
 
 ---
 

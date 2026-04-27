@@ -76,7 +76,7 @@ The **Multiplicative Inverse** property is the defining boundary between a Ring 
 > $$a \div b \equiv a \cdot b^{-1}$$
 > Because a **Ring** does not guarantee the existence of $b^{-1}$ for all elements, division is not a universally defined operation within a Ring. In a **Field**, every non-zero element has an inverse, making division safe and consistent.
 
-## Difference Between Ring and Field:
+## Difference Between Ring and Field
 ### A Ring: $\mathbb{Z}_{6}$ (Integers modulo 6)
 Consider the set $\{0, 1, 2, 3, 4, 5\}$ with addition and multiplication modulo 6.
 - **Why it is a Ring:** It follows all additive group rules and multiplicative closure/associativity.
