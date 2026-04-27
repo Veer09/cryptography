@@ -1,3 +1,6 @@
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+
 def hex_to_bytes(hex: str) -> bytes:
     if len(hex) % 2 != 0:
         raise ValueError("Hex string must have an even number of characters to convert to bytes")
@@ -65,3 +68,8 @@ def find_key(b: bytes) -> tuple[int, bytes, int]:
             best_result = result
             enc_key = i
     return best_score, best_result, enc_key
+
+def decrypt_aes_ecb(ciphertext: bytes, key: bytes) -> bytes:
+    cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
+    decryptor = cipher.decryptor()
+    return decryptor.update(ciphertext) + decryptor.finalize()
