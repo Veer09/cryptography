@@ -1,38 +1,4 @@
 # Advanced Encryption Standard (AES) — An In-Depth Technical Guide
-
-## Table of Contents
-- [Advanced Encryption Standard (AES) — An In-Depth Technical Guide](#advanced-encryption-standard-aes--an-in-depth-technical-guide)
-  - [Table of Contents](#table-of-contents)
-  - [1. Foundational Principles](#1-foundational-principles)
-  - [2. Architecture Overview](#2-architecture-overview)
-    - [Block Size](#block-size)
-    - [Key Size](#key-size)
-    - [Macro Architecture: SPN vs. Feistel](#macro-architecture-spn-vs-feistel)
-  - [3. The State Array](#3-the-state-array)
-  - [4. Round Structure](#4-round-structure)
-  - [5. Layer 1 — SubBytes (Confusion)](#5-layer-1--subbytes-confusion)
-    - [What it does](#what-it-does)
-    - [Design requirements for the S-box](#design-requirements-for-the-s-box)
-    - [Why not a random table?](#why-not-a-random-table)
-    - [AES's chosen construction: $S(a) = g(f(a))$](#aess-chosen-construction-sa--gfa)
-  - [6. Layer 2 — ShiftRows (Diffusion)](#6-layer-2--shiftrows-diffusion)
-    - [What it does](#what-it-does-1)
-    - [Why it's necessary](#why-its-necessary)
-  - [7. Layer 3 — MixColumns (Diffusion)](#7-layer-3--mixcolumns-diffusion)
-    - [What it does](#what-it-does-2)
-- [\\begin{bmatrix} s'_{0,c} \\ s'_{1,c} \\ s'_{2,c} \\ s'_{3,c} \\end{bmatrix}](#beginbmatrix-s0c--s1c--s2c--s3c-endbmatrix)
-    - [Why this specific matrix: the MDS property](#why-this-specific-matrix-the-mds-property)
-    - [Why MixColumns is omitted in the Final Round](#why-mixcolumns-is-omitted-in-the-final-round)
-  - [8. Layer 4 — AddRoundKey (Key Mixing)](#8-layer-4--addroundkey-key-mixing)
-    - [What it does](#what-it-does-3)
-    - [Why XOR?](#why-xor)
-    - [Initial whitening](#initial-whitening)
-  - [9. Key Expansion Schedule](#9-key-expansion-schedule)
-    - [Key expansion summary by variant](#key-expansion-summary-by-variant)
-  - [10. Round Count \& Security Margin](#10-round-count--security-margin)
-
----
-
 ## 1. Foundational Principles
 
 Every secure cipher must satisfy two properties, first articulated by Claude Shannon in 1945:
@@ -243,12 +209,11 @@ Each column vector $[s_{0,c},\ s_{1,c},\ s_{2,c},\ s_{3,c}]^T$ is multiplied by 
 
 $$
 \begin{bmatrix} s'_{0,c} \\ s'_{1,c} \\ s'_{2,c} \\ s'_{3,c} \end{bmatrix}
-=
-\begin{bmatrix}
-\mathtt{02} & \mathtt{03} & \mathtt{01} & \mathtt{01} \\
-\mathtt{01} & \mathtt{02} & \mathtt{03} & \mathtt{01} \\
-\mathtt{01} & \mathtt{01} & \mathtt{02} & \mathtt{03} \\
-\mathtt{03} & \mathtt{01} & \mathtt{01} & \mathtt{02}
+= \begin{bmatrix}
+02 & 03 & 01 & 01 \\
+01 & 02 & 03 & 01 \\
+01 & 01 & 02 & 03 \\
+03 & 01 & 01 & 02
 \end{bmatrix}
 \begin{bmatrix} s_{0,c} \\ s_{1,c} \\ s_{2,c} \\ s_{3,c} \end{bmatrix}
 $$
