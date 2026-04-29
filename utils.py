@@ -73,3 +73,9 @@ def decrypt_aes_ecb(ciphertext: bytes, key: bytes) -> bytes:
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
     decryptor = cipher.decryptor()
     return decryptor.update(ciphertext) + decryptor.finalize()
+
+def pkcs7_padding(plaintext: bytes, block_size: int) -> bytes:
+    padds = block_size - (len(plaintext) % block_size)
+    padding = bytes([padds]) * padds
+    return plaintext + padding
+    
