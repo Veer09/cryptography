@@ -1,7 +1,7 @@
 import secrets
 import random
 import secrets
-import random
+import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -151,3 +151,10 @@ def detect_ecb(ciphertext: bytes) -> bool:
             return True
     return False
     
+global_key = secrets.token_bytes(16)
+
+def new_oracle(plaintext: bytes) -> bytes:
+    unknown_text = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
+    unknown_bytes = base64.b64decode(unknown_text)
+    padded_text = pkcs7_padding(plaintext + unknown_bytes, 16)
+    return encrypt_aes_ecb(padded_text, global_key)
