@@ -1,3 +1,7 @@
+import secrets
+import random
+import secrets
+import random
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -123,4 +127,27 @@ def pkcs7_padding(plaintext: bytes, block_size: int) -> bytes:
 def remove_pkcs7_padding(plaintext: bytes) -> bytes:
     padds = plaintext[-1]
     return plaintext[:-padds]
+
+def encryption_oracle(plaintext: bytes) -> bytes:
+    key = secrets.token_bytes(16)
+    prefix = random.randint(5, 10)
+    suffix = random.randint(5, 10)
+    padded_text = secrets.token_bytes(prefix) + plaintext + secrets.token_bytes(suffix)
+    decider = random.randint(0, 1)
+    print(decider)
+    if decider:
+        return encrypt_aes_ecb(pkcs7_padding(padded_text, 16), key)
+    else:
+        iv = secrets.token_bytes(16) 
+        return encrypt_aes_cbc(padded_text, key, iv)
+    
+def detect_ecb(ciphertext: bytes) -> bool:
+    blocks = {}
+    for i in range(0, len(ciphertext), 16):
+        key = ciphertext[i:i+16]
+        blocks[key] = blocks.get(key, 0) + 1
+    for key in blocks:
+        if blocks[key] > 1:
+            return True
+    return False
     

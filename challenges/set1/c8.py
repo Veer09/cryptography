@@ -1,3 +1,4 @@
+from utils import detect_ecb
 from utils import hex_to_bytes
 
 def solve():
@@ -5,16 +6,9 @@ def solve():
         ecbs = []
         for line in f:
             line = line.strip()
-            blocks = {}
             msg = hex_to_bytes(line)
-            for i in range(0, len(msg), 16):
-                key = msg[i:i+16]
-                blocks[key] = blocks.get(key, 0) + 1
-
-            for key in blocks:
-                if blocks[key] > 1:
-                    ecbs.append(line)
-                    break
+            if detect_ecb(msg):
+                ecbs.append(msg)
         
         for ecb in ecbs:
             print(ecb)
