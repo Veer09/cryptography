@@ -158,3 +158,36 @@ def new_oracle(plaintext: bytes) -> bytes:
     unknown_bytes = base64.b64decode(unknown_text)
     padded_text = pkcs7_padding(plaintext + unknown_bytes, 16)
     return encrypt_aes_ecb(padded_text, global_key)
+
+def kv_parsing(kv_string: str) -> dict[str, any]:
+    kv_pairs = kv_string.split("&")
+    kv = {}
+    for kv_pair in kv_pairs:
+        kv_value = kv_pair.split("=")
+        if len(kv_value) == 2:
+            kv[kv_value[0]] = kv_value[1]
+    return kv
+
+def profile_for(email: str) -> str:
+    email_part = email.split("&")[0]
+    email_stripped = email_part.split("=")[0]
+    user = {
+        "email": email_stripped,
+        "uid": 10,
+        "role": "user"
+    }
+    encoded_user = ""
+    for key in user:
+        encoded_user = encoded_user + key + "=" + str(user[key]) + "&"
+    return encoded_user[:-1] 
+
+
+user_profile_key = secrets.token_bytes(16)
+
+def encrypt_profile(email: str) -> bytes:
+    encoded_profile = profile_for(email)
+    return encrypt_aes_ecb(pkcs7_padding(encoded_profile.encode('utf-8'), 16), user_profile_key)
+
+def decrypt_profile(ciphertext: bytes) -> dict[str, any]:
+    decrypted_profile = remove_pkcs7_padding(decrypt_aes_ecb(ciphertext, user_profile_key))
+    return kv_parsing(decrypted_profile.decode('utf-8'))
