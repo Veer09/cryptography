@@ -191,3 +191,12 @@ def encrypt_profile(email: str) -> bytes:
 def decrypt_profile(ciphertext: bytes) -> dict[str, any]:
     decrypted_profile = remove_pkcs7_padding(decrypt_aes_ecb(ciphertext, user_profile_key))
     return kv_parsing(decrypted_profile.decode('utf-8'))
+
+random_length = random.randint(8, 64)
+random_prefix = secrets.token_bytes(random_length)
+
+def new_oracle2(plaintext: bytes) -> bytes:
+    unknown_text = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
+    unknown_bytes = base64.b64decode(unknown_text)
+    padded_text = pkcs7_padding(random_prefix + plaintext + unknown_bytes, 16)
+    return encrypt_aes_ecb(padded_text, global_key)
