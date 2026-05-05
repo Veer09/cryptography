@@ -204,3 +204,19 @@ def new_oracle2(plaintext: bytes) -> bytes:
     unknown_bytes = base64.b64decode(unknown_text)
     padded_text = pkcs7_padding(random_prefix + plaintext + unknown_bytes, 16)
     return encrypt_aes_ecb(padded_text, global_key)
+
+random_iv = secrets.token_bytes(16)
+
+def encryption_cbc_bitflip(plaintext: bytes) -> bytes:
+    prefix = b"comment1=cooking%20MCs;userdata="
+    suffix = b";comment2=%20like%20a%20pound%20of%20bacon"
+
+    plaintext_stripped = plaintext.split(b";")[0].split(b"=")[0]
+    cipher = encrypt_aes_cbc(prefix + plaintext_stripped + suffix, global_key, random_iv)
+    return cipher
+
+def decryption_cbc_bitflip(ciphertext: bytes) -> bool:
+    plaintext = decrypt_aes_cbc(ciphertext, global_key, random_iv)
+    if plaintext.find(b";admin=true;") == -1:
+        return False
+    return True
