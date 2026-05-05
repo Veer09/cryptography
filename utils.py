@@ -126,6 +126,10 @@ def pkcs7_padding(plaintext: bytes, block_size: int) -> bytes:
 
 def remove_pkcs7_padding(plaintext: bytes) -> bytes:
     padds = plaintext[-1]
+    if padds == 0 and padds > 16:
+        raise ValueError("Invalid Padding Length!!")
+    if plaintext[-padds:] != bytes([padds]) * padds:
+        raise ValueError("Inavlid PKCS#7 Padding!!!")
     return plaintext[:-padds]
 
 def encryption_oracle(plaintext: bytes) -> bytes:
