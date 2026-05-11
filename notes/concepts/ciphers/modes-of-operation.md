@@ -50,9 +50,9 @@ Because identical plaintext blocks produce identical ciphertext blocks, ECB is *
 ### Known risks
 Since the mode's core property is deterministic, stateless block encryption, several attacks become possible:
 
-- **Byte-at-a-Time Decryption:** An attacker with oracle access can recover a secret suffix byte by byte by exploiting the deterministic block mapping. See [Byte-at-a-Time ECB Decryption](../attacks/byte-at-a-time.md).
+- **Byte-at-a-Time Decryption:** An attacker with oracle access can recover a secret suffix byte by byte by exploiting the deterministic block mapping. See [Byte-at-a-Time ECB Decryption](../../attacks/block-cipher-attacks/byte-at-a-time.md).
 - **Block replay / substitution:** Because blocks are completely independent, an attacker can copy, reorder, or replay ciphertext blocks freely. A block $C_j$ that encrypts `"admin=true"` can be spliced into any position in any ciphertext — the other blocks decrypt correctly, unaware of the swap.
-- **ECB Oracle Detection:** Covered in the cryptopals implementation at [`c3.py`](../../challenges/set2/c3.py).
+- **ECB Oracle Detection:** Covered in the cryptopals implementation at [`c3.py`](../../../challenges/set2/c3.py).
 
 ---
 
@@ -115,5 +115,5 @@ $P_i$ depends on $C_{i-1}$ through a plain XOR. If an attacker flips bit $b$ in 
 
 ## Connected to
 - [AES](aes.md)
-- [XOR and Why It Is Used](xor-and-why-it-is-used.md)
-- [Byte-at-a-Time ECB Decryption](../attacks/byte-at-a-time.md)
+- [XOR and Why It Is Used](../classical/xor-and-why-it-is-used.md)
+- [Byte-at-a-Time ECB Decryption](../../attacks/block-cipher-attacks/byte-at-a-time.md)

@@ -1,7 +1,7 @@
 # Byte-at-a-Time ECB Decryption
 
 ## What it breaks
-**[AES-ECB](../concepts/modes-of-operation.md)** has a critical, well-known weakness: **identical plaintext blocks always produce identical ciphertext blocks**. This attack exploits that property to recover a secret string byte by byte, even though the attacker never holds the key.
+**[AES-ECB](../../concepts/ciphers/modes-of-operation.md)** has a critical, well-known weakness: **identical plaintext blocks always produce identical ciphertext blocks**. This attack exploits that property to recover a secret string byte by byte, even though the attacker never holds the key.
 
 It falls under the category of a **Chosen-Plaintext Attack (CPA)** — the attacker has **full control** over the input to an encryption function (an **oracle**) and can observe the resulting ciphertext. The attacker cannot see the key or the secret string directly, but they can probe the oracle as many times as they want.
 
@@ -174,9 +174,9 @@ Now that `p` is known, always prepend exactly `p` filler bytes to your input. Th
 4. **Prepend `p` filler bytes**: Always add `p` filler bytes to your input to neutralise the prefix tail. Now proceed exactly as in the simple case, using `(input_block_start + p)` as the ciphertext offset for all lookups.
 
 ## My Implementation
-- **Simple Case (no prefix):** [`c4.py`](../../challenges/set2/c4.py)
-- **Harder Case (with random prefix):** [`c6.py`](../../challenges/set2/c6.py)
+- **Simple Case (no prefix):** [`c4.py`](../../../challenges/set2/c4.py)
+- **Harder Case (with random prefix):** [`c6.py`](../../../challenges/set2/c6.py)
 
 ## Connected to
-- [Modes of Operation (ECB)](../concepts/modes-of-operation.md)
-- [Frequency Analysis](../concepts/frequency-analysis.md)
+- [Modes of Operation (ECB)](../../concepts/ciphers/modes-of-operation.md)
+- [Frequency Analysis](../../concepts/classical/frequency-analysis.md)

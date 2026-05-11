@@ -22,4 +22,4 @@ When guessing a key size $N$, if you guess correctly, you are comparing bytes th
 
 ## Connected to
 *   [XOR and Why It Is Used](xor-and-why-it-is-used.md)
-*   [Repeating Key XOR Attack](../attacks/repeted-key-xor.md)
+*   [Repeating Key XOR Attack](../../attacks/xor-attacks/repeted-key-xor.md)

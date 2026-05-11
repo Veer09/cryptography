@@ -300,4 +300,3 @@ AES's round counts (10/12/14) were chosen to provide a comfortable security marg
 | AES-256 | 14 | ~7–8 rounds |
 
 ---
-

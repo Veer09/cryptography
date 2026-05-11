@@ -17,5 +17,5 @@ If an encryption algorithm preserves the frequency distribution of the plaintext
 
 ## Connected to
 *   [XOR and Why It Is Used](xor-and-why-it-is-used.md)
-*   [Single-Byte XOR Attack](../attacks/single-byte-xor.md)
-*   [Repeated-Key XOR Attack](../attacks/repeted-key-xor.md)
+*   [Single-Byte XOR Attack](../../attacks/xor-attacks/single-byte-xor.md)
+*   [Repeated-Key XOR Attack](../../attacks/xor-attacks/repeted-key-xor.md)
