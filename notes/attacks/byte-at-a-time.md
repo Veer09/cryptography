@@ -39,7 +39,7 @@ The oracle encrypts this block and returns a ciphertext. Call it `target_cipher`
 
 Now, build a **lookup table**: send every possible 16-byte message of the form `AAAAAAAAAAAAAAA?` where `?` is each of the 256 byte values (0x00 to 0xFF). Encrypt each one and record:
 
-$$\text{cipher\_map}[\text{AES-ECB}(\texttt{AAAAAAAAAAAAAAA?})] = \texttt{?}$$
+$$\text{cipher-map}[\text{AES-ECB}(\texttt{AAAAAAAAAAAAAAA?})] = \texttt{?}$$
 
 Finally, look up `target_cipher` in `cipher_map`. The match gives you the first byte of the secret!
 
@@ -73,7 +73,7 @@ Block 2: [ s2 s3 s4 ... s16 s17 ]                ← 15 known secret bytes + 1 u
 
 The `s1` that was pushed into Block 1 acts as part of the "known left side". The lookup table is now built using the last 15 **known secret bytes** (`s2` through `s16`) + `?`:
 
-$$\text{cipher\_map}[\text{AES-ECB}(s_2\ s_3\ \ldots\ s_{16}\ \texttt{?})] = \texttt{?}$$
+$$\text{cipher-map}[\text{AES-ECB}(s_2\ s_3\ \ldots\ s_{16}\ \texttt{?})] = \texttt{?}$$
 
 Match Block 2's ciphertext against the map to find `s17`. The pattern continues indefinitely — each iteration, the window of known bytes slides forward by one, recovering the entire secret string.
 
@@ -115,7 +115,7 @@ Keep increasing the input length (sending `AA`, `AAA`, `AAAA`, ...) while watchi
 When the block stabilises at input length $L$:
 
 $$p = 16 - L$$
-$$\text{total prefix length} = \text{input\_block\_start} + p$$
+$$\text{total prefix length} = \text{input-block-start} + p$$
 
 ### Step 3 — Neutralise the Prefix
 Now that `p` is known, always prepend exactly `p` filler bytes to your input. This pads the prefix tail to a full block, effectively making the prefix completely disappear into whole, fixed blocks. From this point, the attack is identical to the simple case, just offset by `(input_block_start + p)` bytes in the ciphertext.
