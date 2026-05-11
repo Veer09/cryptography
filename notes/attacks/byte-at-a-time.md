@@ -128,7 +128,7 @@ Now that `p` is known, always prepend exactly `p` filler bytes to your input. Th
 3. **Cross block boundaries**: Once a block is fully recovered, use the last 15 known secret bytes as the left-side of your lookup table to probe the next block.
 4. **Stop condition**: The loop ends when the oracle's target block can no longer be found in the lookup table.
 
-   **Why does this happen?** AES-ECB requires the input to always be a multiple of 16 bytes, so the oracle internally applies **[PKCS#7 padding](../concepts/pkcs7-padding.md)** to the plaintext before encrypting. When all real secret bytes have been recovered, padding bytes start appearing inside the target block, eventually causing a lookup miss.
+   **Why does this happen?** AES-ECB requires the input to always be a multiple of 16 bytes, so the oracle internally applies PKCS#7 Padding to the plaintext before encrypting. When all real secret bytes have been recovered, padding bytes start appearing inside the target block, eventually causing a lookup miss.
 
    Trace through a 16-byte secret (`s1` to `s16`) to see exactly when the break fires:
 
