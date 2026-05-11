@@ -126,7 +126,7 @@ def pkcs7_padding(plaintext: bytes, block_size: int) -> bytes:
 
 def remove_pkcs7_padding(plaintext: bytes) -> bytes:
     padds = plaintext[-1]
-    if padds == 0 and padds > 16:
+    if padds == 0 or padds > 16:
         raise ValueError("Invalid Padding Length!!")
     if plaintext[-padds:] != bytes([padds]) * padds:
         raise ValueError("Inavlid PKCS#7 Padding!!!")
@@ -220,3 +220,30 @@ def decryption_cbc_bitflip(ciphertext: bytes) -> bool:
     if plaintext.find(b";admin=true;") == -1:
         return False
     return True
+
+def encryption_padding_oracle() -> tuple[bytes, bytes]:
+    plaintexts = [
+    "MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
+    "MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=",
+    "MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==",
+    "MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==",
+    "MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl",
+    "MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==",
+    "MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==",
+    "MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=",
+    "MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=",
+    "MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"
+    ]
+    plaintext = base64.b64decode(random.choice(plaintexts)) 
+    iv = secrets.token_bytes(16)
+    return iv, encrypt_aes_cbc(plaintext, global_key, iv)
+
+def padding_oracle(iv: bytes, ciphertext: bytes) -> bool:
+    plaintext = decrypt_aes_cbc(ciphertext, global_key, iv)
+    try:
+        removed_padded_text = remove_pkcs7_padding(plaintext)
+        return True
+    except ValueError:
+        return False
+
+
