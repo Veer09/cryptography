@@ -1,13 +1,14 @@
-# Modes of Operation
+# Modes of Operation (ECB, CBC, CTR)
 
 ## What it is
 **[AES](aes.md)** is a **block cipher** — it operates on exactly one fixed-size chunk of data at a time (16 bytes). Real-world data is almost always larger than 16 bytes, so we need a strategy for *how* to apply AES repeatedly across the full message.
 
 A **Mode of Operation (MOO)** defines exactly that strategy: how to split the plaintext into blocks, whether to mix in any extra state between blocks, and how to combine the results into a final ciphertext. The choice of mode is a design decision with serious security consequences.
 
-There are two modes covered here:
+There are three modes covered here:
 1. **Electronic Codebook Mode (ECB)** — the simplest, most dangerous mode.
 2. **Cipher Block Chaining Mode (CBC)** — the classic fix that adds inter-block dependency.
+3. **Counter Mode (CTR)** — turns the block cipher into a highly parallelisable stream cipher.
 
 ---
 
@@ -97,21 +98,81 @@ $P_i$ depends on $C_{i-1}$ through a plain XOR. If an attacker flips bit $b$ in 
 > **This only affects integrity, not confidentiality.** CBC still hides the plaintext contents. But it provides no guarantee that the plaintext you receive is the plaintext that was sent. Authenticated encryption (e.g. AES-GCM) solves this.
 
 ### Known risks
-- **Bit-Flipping Attack:** An attacker who knows or can guess the structure of a plaintext block can flip bits in the preceding ciphertext block to produce a chosen change in the target block — for example, escalating `role=user` to `role=admin`. See the dedicated attack writeup *(coming soon)*.
-- **Padding Oracle Attack:** When a decryption endpoint leaks whether the PKCS#7 padding on the last block is valid or not, an attacker can exploit CBC's XOR chaining to decrypt any ciphertext byte by byte with no key. See the dedicated attack writeup *(coming soon)*.
+- **Bit-Flipping Attack:** An attacker who knows or can guess the structure of a plaintext block can flip bits in the preceding ciphertext block to produce a chosen change in the target block — for example, escalating `role=user` to `role=admin`. See [Bit-Flipping Attack](../../attacks/block-cipher-attacks/bit-flipping.md).
+- **Padding Oracle Attack:** When a decryption endpoint leaks whether the PKCS#7 padding on the last block is valid or not, an attacker can exploit CBC's XOR chaining to decrypt any ciphertext byte by byte with no key. See [Padding Oracle Attack](../../attacks/block-cipher-attacks/padding-oracle.md).
+
+---
+
+## 3. Counter Mode (CTR)
+
+### How it works
+CTR mode is fundamentally different from ECB and CBC. Instead of encrypting the plaintext directly through the AES algorithm, CTR mode turns the block cipher into a **stream cipher**. It does this by encrypting a sequence of unique numbers (counters) to generate a pseudorandom sequence of bytes called a **keystream**. 
+
+This keystream is then simply **XOR'd** with the plaintext to produce the ciphertext.
+
+Each block requires a unique input to AES. This is created by combining:
+1. **Nonce**: A unique value chosen once per message (similar to an IV). It ensures different messages get completely different keystreams.
+2. **Counter**: A sequential number that increments for every block within the message.
+
+**Keystream Generation:**
+$$KS_i = E(K,\ \text{Nonce} \mathbin{\|} \text{Counter}_i)$$
+
+**Encryption:**
+$$C_i = P_i \oplus KS_i$$
+
+**Decryption:**
+$$P_i = C_i \oplus KS_i$$
+
+Because encryption and decryption are just XORing with the same keystream, **the AES decryption function $D(K, \cdot)$ is never used** in CTR mode. Both operations use the AES encryption function $E(K, \cdot)$ to generate the keystream.
+
+### What CTR fixes over CBC
+CTR mode brings two massive architectural advantages over CBC:
+
+1. **Parallelism**: Since the keystream blocks only depend on the key, nonce, and the block index (counter), they can all be computed independently at the same time. You can encrypt or decrypt the 100th block without needing to process blocks 1 through 99.
+2. **No Padding Required**: Because it operates like a stream cipher, if the final plaintext block is only 5 bytes long, you simply take the first 5 bytes of the final keystream block and XOR them. The rest of the keystream block is discarded. Without padding, **padding oracle attacks are impossible**.
+
+### The critical weakness: Nonce reuse
+The entire security of CTR mode rests on one absolute rule: **you must never reuse the same (Key, Nonce) pair**.
+
+If the same nonce is used for two different messages under the same key, the keystream generated will be perfectly identical for both messages. This leads to a catastrophic failure known as a **keystream reuse attack**.
+
+If two plaintexts $P^{(A)}$ and $P^{(B)}$ are encrypted with the same keystream $KS$:
+$$C^{(A)} = P^{(A)} \oplus KS$$
+$$C^{(B)} = P^{(B)} \oplus KS$$
+
+An attacker can XOR the two ciphertexts together, which cancels out the unknown keystream entirely and leaves the XOR of the two plaintexts:
+$$C^{(A)} \oplus C^{(B)} = P^{(A)} \oplus P^{(B)}$$
+
+From $P^{(A)} \oplus P^{(B)}$, an attacker can use frequency analysis and crib-dragging to recover both plaintexts, completely breaking the encryption without ever finding the key.
+
+### What still goes wrong: severe malleability
+Like CBC mode, CTR mode provides no integrity. But CTR is even **more vulnerable to bit-flipping** than CBC.
+
+In CBC, flipping a bit in the ciphertext allows you to control the next block's plaintext, but it completely destroys the current block. 
+In CTR mode, the malleability is perfectly surgical:
+$$P_i'[j] = P_i[j] \oplus (C_i[j] \oplus C_i'[j])$$
+
+If an attacker flips the $j$-th bit of $C_i$, the exact same bit flips in $P_i$ — and **no other bits or blocks are affected**. There is zero collateral damage. An attacker who knows the plaintext can modify it to anything they want with perfect precision.
+
+> [!WARNING]
+> Because CTR is completely malleable, it must **never** be used without a Message Authentication Code (MAC) to guarantee integrity. Modern systems combine CTR mode with a Carter-Wegman MAC to create **AES-GCM** (Galois/Counter Mode) — the standard for authenticated encryption.
+
+### Known risks
+- **Nonce Reuse Attack:** XORing two ciphertexts encrypted with the same nonce reveals the XOR of their plaintexts. See the dedicated attack writeup *(coming soon)*.
+- **Bit-Flipping Attack:** CTR is completely malleable with no block sacrifice, allowing surgical tampering of the plaintext.
 
 ---
 
 ## Summary
 
-| Property | ECB | CBC |
-|---|---|---|
-| Inter-block dependency | None | $C_i$ depends on all previous blocks via chain |
-| Same plaintext → same ciphertext? | Always (dangerous) | No — IV and chain break this |
-| Parallel encryption | Yes | No — each block needs the previous ciphertext |
-| Parallel decryption | Yes | Yes — only needs $C_i$ and $C_{i-1}$ |
-| IV required | No | Yes — must be random and non-reused |
-| Main weakness | Pattern leakage, block replay/substitution | Bit-flipping, padding oracle, IV reuse |
+| Property | ECB | CBC | CTR |
+|---|---|---|---|
+| Inter-block dependency | None | $C_i$ depends on all previous blocks via chain | None |
+| Same plaintext → same ciphertext? | Always (dangerous) | No — IV/Nonce break this | No — Nonce/Counter break this |
+| Parallel encryption | Yes | No — each block needs the previous ciphertext | Yes |
+| Parallel decryption | Yes | Yes — only needs $C_i$ and $C_{i-1}$ | Yes |
+| Padding required | Yes | Yes | No |
+| Main weakness | Pattern leakage, replay | Bit-flipping, padding oracle, IV reuse | Nonce reuse, surgical bit-flipping |
 
 ## Connected to
 - [AES](aes.md)
