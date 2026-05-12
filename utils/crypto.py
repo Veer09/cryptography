@@ -6,6 +6,7 @@ from cryptography.hazmat.backends import default_backend
 from utils.xor import perform_xor
 
 
+
 def pkcs7_padding(plaintext: bytes, block_size: int) -> bytes:
     padds = block_size - (len(plaintext) % block_size)
     padding = bytes([padds]) * padds

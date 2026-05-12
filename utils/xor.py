@@ -54,3 +54,43 @@ def find_key(b: bytes) -> tuple[int, bytes, int]:
             best_result = result
             enc_key = i
     return best_score, best_result, enc_key
+
+
+def interactive_crib_drag(ciphertexts: list[bytes]):
+    print("Welcome to the Crib Dragging Tool!")
+    print("Press Ctrl+C to exit at any time.\n")
+    
+    while True:
+        try:
+            print("=" * 60)
+
+            target_line = int(input("1. Which line # do you want to guess on? (0 to 39): "))
+            offset = int(input("2. At what position (index) does your guess start?: "))
+            guess = input("3. Enter your text guess (e.g., ' the ', 'ing'): ").encode('ascii')
+
+            target_cipher = ciphertexts[target_line]
+            target_chunk = target_cipher[offset : offset + len(guess)]
+            
+            derived_keystream = perform_xor(target_chunk, guess)
+
+            print(f"\n--- Results for guess '{guess.decode()}' at index {offset} ---")
+
+            for i, ct in enumerate(ciphertexts):
+                if offset >= len(ct):
+                    continue 
+
+                ct_chunk = ct[offset : offset + len(derived_keystream)]
+                
+                decrypted_chunk = perform_xor(ct_chunk, derived_keystream)
+                
+                safe_text = "".join(chr(b) if 32 <= b <= 126 else "." for b in decrypted_chunk)
+                
+                if i == target_line:
+                    print(f"Line {i:02} (Target): -> {safe_text} <-")
+                else:
+                    print(f"Line {i:02}:         {safe_text}")
+                    
+        except ValueError:
+            print("\n[!] Invalid input. Please enter numbers for line/offset.")
+        except IndexError:
+            print("\n[!] That offset is too long for the target line.")
