@@ -49,18 +49,18 @@ Take any two consecutive ciphertext blocks $(C_1, C_2)$. The goal is to recover 
 ### Step 1 — Probe for valid `\x01` padding
 Try all 256 values for $C_1'[15]$ (the last byte of $C_1'$). Send $(C_1', C_2)$ to the oracle for each trial. When the oracle returns **valid**, the decrypted last byte $P_2'[15]$ must equal `\x01` — because a single-byte pad of `\x01` is the only one-byte valid PKCS#7 ending.
 
-Let the winning trial value be $t^{*}$. Then:
+Let the winning trial value be $t^{\ast}$. Then:
 
 $$P_2'[15] = \texttt{0x01}$$
-$$X[15] = \texttt{0x01} \oplus t^{*}$$
-$$P_2[15] = X[15] \oplus C_1[15] = \texttt{0x01} \oplus t^{*} \oplus C_1[15]$$
+$$X[15] = \texttt{0x01} \oplus t^{\ast}$$
+$$P_2[15] = X[15] \oplus C_1[15] = \texttt{0x01} \oplus t^{\ast} \oplus C_1[15]$$
 
 The last byte of the original plaintext is recovered.
 
 ### Step 2 — False positive guard
 There is one edge case: the last byte of $P_2$ might already be `\x02`, and the second-last byte might also be `\x02`. In that case, the oracle would say "valid" for the trial value that produces `\x02 \x02` at the end — a false positive that looks like 2-byte padding, not 1-byte padding.
 
-To catch this, when the oracle first says "valid" for $C_1'[15] = t^{*}$, flip one more bit — XOR $C_1'[14]$ (the second-last byte) by `\x01` and re-query the oracle. If it now says "invalid", the `\x02\x02` false positive is confirmed. Continue searching. If it still says "valid", the `\x01` reading is genuine.
+To catch this, when the oracle first says "valid" for $C_1'[15] = t^{\ast}$, flip one more bit — XOR $C_1'[14]$ (the second-last byte) by `\x01` and re-query the oracle. If it now says "invalid", the `\x02\x02` false positive is confirmed. Continue searching. If it still says "valid", the `\x01` reading is genuine.
 
 This is exactly what `c1.py` does:
 ```python
@@ -85,7 +85,7 @@ We already know $X[15]$ from the previous step, so this is a direct calculation 
 Now try all 256 values for $C_1'[14]$ while keeping $C_1'[15]$ fixed at the value that gives `\x02`. When the oracle says "valid", the last two bytes of $P_2'$ are `\x02 \x02`:
 
 $$P_2'[14] = \texttt{0x02}$$
-$$X[14] = \texttt{0x02} \oplus t^{*}$$
+$$X[14] = \texttt{0x02} \oplus t^{\ast}$$
 $$P_2[14] = X[14] \oplus C_1[14]$$
 
 Second-last byte recovered. In `c1.py`, after each byte is found, all already-solved positions are flipped to the next padding target value in one pass:
@@ -106,9 +106,9 @@ For the $k$-th byte from the end (0-indexed), the target padding value is $k+1$.
 **Per-block cost:** $16 \times 256 = 4096$ oracle queries at most.
 **Full message of $n$ blocks:** at most $n \times 4096$ queries.
 
-The formula that converts a winning trial $t^{*}$ for byte $k$ from the end into an original plaintext byte is always:
+The formula that converts a winning trial $t^{\ast}$ for byte $k$ from the end into an original plaintext byte is always:
 
-$$\boxed{P_2[15-k] = (k+1) \oplus t^{*} \oplus C_1[15-k]}$$
+$$\boxed{P_2[15-k] = (k+1) \oplus t^{\ast} \oplus C_1[15-k]}$$
 
 ## Recovering multiple blocks
 The attack is not limited to two blocks. The full ciphertext is treated as a sequence of pairs: $(C_0, C_1)$, $(C_1, C_2)$, $(C_2, C_3)$, $\ldots$. The attack is run independently on each pair to recover the plaintext of the second block in each pair.
