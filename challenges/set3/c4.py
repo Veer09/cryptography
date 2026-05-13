@@ -23,6 +23,7 @@ def solve():
         target_chunk = ciphertext[:len(key_stream)]
         plaintext = bytes(a ^ b for a, b in zip(target_chunk, key_stream))
         print(plaintext.decode('ascii', errors='replace')) 
-        
+
+    # It will not give fully correct solution but other missing/broken parts can be found using manual analysis. 
 if __name__ == "__main__":
     solve()
