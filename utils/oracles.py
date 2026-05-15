@@ -1,6 +1,8 @@
+from utils.crypto import MT19937
 import secrets
 import random
 import base64
+import time
 from utils.crypto import (
     encrypt_aes_ecb,
     encrypt_aes_cbc,
@@ -122,3 +124,14 @@ def padding_oracle(iv: bytes, ciphertext: bytes) -> bool:
         return True
     except ValueError:
         return False
+
+def random_oracle() -> tuple[int, int]:
+    current_timestamp = int(time.time())
+    first_stop = random.randint(40, 1000)
+    seed_timestamp = current_timestamp + first_stop
+    print("Seeded Timestamp: " + str(seed_timestamp))
+    mt19937 = MT19937(seed_timestamp)
+    random_num = mt19937.generate_number()
+    second_stop = random.randint(40, 1000)
+    return random_num, seed_timestamp + second_stop
+

@@ -132,5 +132,22 @@ class MT19937:
     def generate_number(self):
         return self.temper()
 
+def reverse_rightshift_xor(y: int, a: int) -> int:
+    x = y
+    prev_x = -1
+    while prev_x != x:
+        prev_x = x
+        x  = y ^ (x >> a) 
+    return x 
+
+
+def reverse_leftshift_xor(y: int, a: int, mask: int) -> int:
+    x = y
+    prev_x = -1
+    while prev_x != x:
+        prev_x = x
+        x  = y ^ ((x << a) & mask & (0xFFFFFFFF))
+    return x 
+
 
     
