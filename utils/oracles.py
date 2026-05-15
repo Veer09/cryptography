@@ -1,3 +1,5 @@
+from utils.crypto import encryption_mt19937
+import secrets
 from utils.crypto import MT19937
 import secrets
 import random
@@ -135,3 +137,15 @@ def random_oracle() -> tuple[int, int]:
     second_stop = random.randint(40, 1000)
     return random_num, seed_timestamp + second_stop
 
+def stream_cipher_oracle(plaintext: bytes) -> bytes:
+    key = int(secrets.randbits(16))
+    print(key)
+    random_len = random.randint(5, 30)
+    random_prefix = secrets.token_bytes(random_len)
+    cipher = encryption_mt19937(random_prefix+plaintext, key)
+    return cipher
+
+def get_password_token() -> int:
+    timestamp = int(time.time())
+    generator = MT19937(timestamp)
+    return generator.generate_number()
