@@ -88,3 +88,71 @@ def aes_ctr(text: bytes, key: bytes) -> bytes:
         cipher += perform_xor(ks[: len(block_text)], block_text)
     return cipher
 
+class MT19937:
+    def __init__(self, seed):
+        self.n= 624
+        self.m = 397
+        self.f = 1812433253
+        self.a = 0x9908B0DF
+        self.lower_mask = (1 << 31) - 1
+        self.upper_mask = 1 << 31
+        self.index = self.n
+        self.mask32 = 0xFFFFFFFF
+        self.mt_state = [0] * self.n
+        self.initialize_state(seed)
+        
+    def initialize_state(self, seed: int):
+        #Initialization
+        self.mt_state[0] = seed & self.mask32
+        for i in range(1, 624):
+            top_two = self.mt_state[i-1] >> 30
+            # Adding multiplication avalanche in state
+            self.mt_state[i] = (self.f * (self.mt_state[i-1] ^ top_two) + i) & self.mask32
+
+    def twist_state(self):
+        for i in range(self.n):
+            x = (self.mt_state[i] & self.upper_mask) + (self.mt_state[(i+1) % self.n] & self.lower_mask)
+            xA = x >> 1
+            if x % 2 != 0:
+                xA ^= self.a
+            self.mt_state[i] = (self.mt_state[ (i + self.m) % self.n] ^ xA) & self.mask32
+        self.index = 0
+
+    def temper(self):
+        if self.index == self.n:
+            self.twist_state()
+        y = self.mt_state[self.index]
+        y ^= (y >> 11)
+        y ^= (y << 7) & 0x9D2C5680
+        y ^= (y << 15) & 0xEFC60000
+        y ^= (y >> 18)
+        self.index += 1
+        return y & self.mask32
+
+    def generate_number(self):
+        return self.temper()
+
+def reverse_rightshift_xor(y: int, a: int) -> int:
+    x = y
+    prev_x = -1
+    while prev_x != x:
+        prev_x = x
+        x  = y ^ (x >> a) 
+    return x 
+
+
+def reverse_leftshift_xor(y: int, a: int, mask: int) -> int:
+    x = y
+    prev_x = -1
+    while prev_x != x:
+        prev_x = x
+        x  = y ^ ((x << a) & mask & (0xFFFFFFFF))
+    return x 
+
+def untemper_rand(rand: int) -> int:
+    state = reverse_rightshift_xor(rand, 18)
+    state = reverse_leftshift_xor(state, 15, 0xEFC60000)
+    state = reverse_leftshift_xor(state, 7, 0x9D2C5680)
+    return reverse_rightshift_xor(state, 11)
+
+    
