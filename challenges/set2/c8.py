@@ -3,7 +3,7 @@ from utils import encryption_cbc_bitflip
 from utils import decryption_cbc_bitflip
 
 def solve():
-    # Selecting text such that blit-flip works well and also bypass encryption 
+    # Selecting text such that bit-flip works well and also bypass encryption 
     temperedtext = b":admin<true:"
     ciphertext = encryption_cbc_bitflip(temperedtext)
     ciphertext_arr = bytearray(ciphertext)

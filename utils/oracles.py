@@ -128,6 +128,7 @@ def padding_oracle(iv: bytes, ciphertext: bytes) -> bool:
     except ValueError:
         return False
 
+
 def random_oracle() -> tuple[int, int]:
     current_timestamp = int(time.time())
     first_stop = random.randint(40, 1000)
@@ -138,25 +139,48 @@ def random_oracle() -> tuple[int, int]:
     second_stop = random.randint(40, 1000)
     return random_num, seed_timestamp + second_stop
 
+
 def stream_cipher_oracle(plaintext: bytes) -> bytes:
     key = int(secrets.randbits(16))
     print(key)
     random_len = random.randint(5, 30)
     random_prefix = secrets.token_bytes(random_len)
-    cipher = encryption_mt19937(random_prefix+plaintext, key)
+    cipher = encryption_mt19937(random_prefix + plaintext, key)
     return cipher
+
 
 def get_password_token() -> int:
     timestamp = int(time.time())
     generator = MT19937(timestamp)
     return generator.generate_number()
 
+
 def ctr_oracle(plaintext: bytes) -> bytes:
     return aes_ctr(plaintext, global_key)
+
 
 def ctr_edit(ciphertext: bytes, offset: int, newtext: bytes) -> bytes:
     if offset >= len(ciphertext):
         raise ValueError("Invalid offset value!!")
     plaintext = aes_ctr(ciphertext, global_key)
-    modified_plaintext = plaintext[:offset] + newtext + plaintext[offset + len(newtext):]
+    modified_plaintext = (
+        plaintext[:offset] + newtext + plaintext[offset + len(newtext) :]
+    )
     return aes_ctr(modified_plaintext, global_key)
+
+
+def encryption_ctr_bitflip(plaintext: bytes) -> bytes:
+    prefix = b"comment1=cooking%20MCs;userdata="
+    suffix = b";comment2=%20like%20a%20pound%20of%20bacon"
+    plaintext_stripped = plaintext.split(b";")[0].split(b"=")[0]
+    cipher = aes_ctr(
+        prefix + plaintext_stripped + suffix, global_key
+    )
+    return cipher
+
+
+def decryption_ctr_bitflip(ciphertext: bytes) -> bool:
+    plaintext = aes_ctr(ciphertext, global_key)
+    if plaintext.find(b";admin=true;") == -1:
+        return False
+    return True
