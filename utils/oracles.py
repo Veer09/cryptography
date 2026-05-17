@@ -1,3 +1,4 @@
+from utils.crypto import aes_ctr
 from utils.crypto import encryption_mt19937
 import secrets
 from utils.crypto import MT19937
@@ -149,3 +150,13 @@ def get_password_token() -> int:
     timestamp = int(time.time())
     generator = MT19937(timestamp)
     return generator.generate_number()
+
+def ctr_oracle(plaintext: bytes) -> bytes:
+    return aes_ctr(plaintext, global_key)
+
+def ctr_edit(ciphertext: bytes, offset: int, newtext: bytes) -> bytes:
+    if offset >= len(ciphertext):
+        raise ValueError("Invalid offset value!!")
+    plaintext = aes_ctr(ciphertext, global_key)
+    modified_plaintext = plaintext[:offset] + newtext + plaintext[offset + len(newtext):]
+    return aes_ctr(modified_plaintext, global_key)

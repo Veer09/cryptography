@@ -73,8 +73,7 @@ def generate_keystream(nonce: bytes, counter: bytes, key: bytes) -> bytes:
     return encrypt_aes_ecb(iv, key)
 
 
-def aes_ctr(text: bytes, key: bytes) -> bytes:
-    nonce = 0
+def aes_ctr(text: bytes, key: bytes, nonce: int = 0) -> bytes:
     blocks = -(len(text) // -16)
     cipher = b""
     for i in range(blocks):
