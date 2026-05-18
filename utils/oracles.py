@@ -173,9 +173,7 @@ def encryption_ctr_bitflip(plaintext: bytes) -> bytes:
     prefix = b"comment1=cooking%20MCs;userdata="
     suffix = b";comment2=%20like%20a%20pound%20of%20bacon"
     plaintext_stripped = plaintext.split(b";")[0].split(b"=")[0]
-    cipher = aes_ctr(
-        prefix + plaintext_stripped + suffix, global_key
-    )
+    cipher = aes_ctr(prefix + plaintext_stripped + suffix, global_key)
     return cipher
 
 
@@ -183,4 +181,22 @@ def decryption_ctr_bitflip(ciphertext: bytes) -> bool:
     plaintext = aes_ctr(ciphertext, global_key)
     if plaintext.find(b";admin=true;") == -1:
         return False
+    return True
+
+
+def encryption_cbc_iv(plaintext: bytes) -> bytes:
+    prefix = b"comment1=cooking%20MCs;userdata="
+    suffix = b";comment2=%20like%20a%20pound%20of%20bacon"
+    plaintext_stripped = plaintext.split(b";")[0].split(b"=")[0]
+    cipher = encrypt_aes_cbc(
+        prefix + plaintext_stripped + suffix, global_key, global_key
+    )
+    return cipher
+
+
+def decryption_cbc_iv(ciphertext: bytes) -> bool:
+    plaintext = decrypt_aes_cbc(ciphertext, global_key, global_key)
+    for byte in plaintext:
+        if byte > 127:
+            raise ValueError(plaintext)
     return True
