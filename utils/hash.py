@@ -2,10 +2,15 @@ import struct
 
 
 class SHA1:
-    def __init__(self):
+    def __init__(self, digest=None, start_len: int = 0):
+        if digest is None:
+            self.digest = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0]
+        else:
+            self.digest = digest[:]
         self.K = [0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6]
         self.block_size = 512
         self.length_field = 64
+        self.start_len = start_len
 
     def _f(self, i: int, b: int, c: int, d: int) -> int:
         if i < 20:
@@ -18,7 +23,6 @@ class SHA1:
             return b ^ c ^ d
     
     def compute_hash(self, data: bytes) -> str:
-        self.digest = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0]
         padded_data = self._padding(data)
         for i in range(0, len(padded_data), (self.block_size // 8)):
             self._compression_function(padded_data[i:i+(self.block_size // 8)])
@@ -27,14 +31,14 @@ class SHA1:
         
     def _padding(self, data: bytes) -> bytes:
         padding = b"\x80"
-        while (len(data) + len(padding) + (self.length_field // 8)) % (self.block_size // 8) != 0:
-            padding += b"\x00"
-        length_in_bits = len(data) * 8
+        while (len(data) + self.start_len + len(padding) + (self.length_field // 8)) % (self.block_size // 8) != 0:
+            padding += b"\x00"  
+        length_in_bits = (len(data) + self.start_len) * 8
         length = length_in_bits.to_bytes((self.length_field // 8), 'big')
         padding += length
         return data + padding
 
-    def _compression_function(self, data: bytes) -> bytes:
+    def _compression_function(self, data: bytes) -> None:
         block = list(struct.unpack(">16I", data))
         expanded_block = self._expand_words(block)
         a, b, c, d, e = self.digest
